@@ -1,0 +1,338 @@
+{
+	"info": {
+		"_postman_id": "a4210a8b-303e-46f3-bea7-1b3cd383f20f",
+		"name": "adquira_sua_bolt",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "31016043"
+	},
+	"item": [
+		{
+			"name": "listar_todos_os_combos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"function getRandomItem(array) {\r",
+							"    const randomIndex = Math.floor(Math.random() * array.length);\r",
+							"\r",
+							"    return array[randomIndex];\r",
+							"}\r",
+							"\r",
+							"function setRandomPOSInterestId() {\r",
+							"    const randomPOSInterest = getRandomItem(responseJson.pOSInterest);\r",
+							"    \r",
+							"    if (randomPOSInterest) {\r",
+							"        pm.environment.set(\"posInterestId\", randomPOSInterest.id);\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"function setRandomPlanInterestId() {\r",
+							"    const randomPlanInterest = getRandomItem(responseJson.planInterest);\r",
+							"\r",
+							"    if (randomPlanInterest) {\r",
+							"        pm.environment.set(\"planInterestId\", randomPlanInterest.id);\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"function setEnvironmentVariables() {\r",
+							"    setRandomPOSInterestId();\r",
+							"    setRandomPlanInterestId();\r",
+							"}\r",
+							"\r",
+							"setEnvironmentVariables();\r",
+							"\r",
+							"//A - AUTENTICAÇÃO E AUTORIZAÇÃO\r",
+							"pm.test(\"Usuário deve estar autenticado\", function () {\r",
+							"    // Verificar se a requisição tem o cookie de autenticação\r",
+							"    const cookieHeader = pm.request.headers.get(\"Cookie\");\r",
+							"    pm.expect(cookieHeader).to.not.be.null;\r",
+							"    pm.expect(cookieHeader).to.include(\"session_id=\");\r",
+							"\r",
+							"    pm.expect(pm.response.code).to.be.equal(200);\r",
+							"});\r",
+							"\r",
+							"//D - FORMATO CORRETO DA RESPOSTA DA REQUISIÇÃO\r",
+							"pm.test(\"Resposta deve ter propriedades obrigatórias\", function () {\r",
+							"    pm.expect(responseJson).to.have.property(\"pOSInterest\");\r",
+							"    pm.expect(responseJson).to.have.property(\"planInterest\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"pOSInterest deve ser um array válido\", function () {\r",
+							"    pm.expect(responseJson.pOSInterest).to.be.an(\"array\");\r",
+							"    pm.expect(responseJson.pOSInterest).to.have.lengthOf.at.least(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Deve conter as opções de POS esperadas\", function () {\r",
+							"    const posDescriptions = responseJson.pOSInterest.map(item => item.description);\r",
+							"    pm.expect(posDescriptions).to.include.members([\r",
+							"        \"Maquininha D195 (pequena)\",\r",
+							"        \"Maquininha S920 (grande)\",\r",
+							"        \"Maquininha Q92X (grande)\"\r",
+							"    ]);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"planInterest deve ser um array válido\", function () {\r",
+							"    pm.expect(responseJson.planInterest).to.be.an(\"array\");\r",
+							"    pm.expect(responseJson.planInterest).to.have.lengthOf.at.least(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Deve conter as opções de plano esperadas\", function () {\r",
+							"    const planDescriptions = responseJson.planInterest.map(item => item.description);\r",
+							"    pm.expect(planDescriptions).to.include.members([\r",
+							"        \"Plano Classic (acima de R$ 40 mil)\",\r",
+							"        \"Plano Power (de R$ 20 mil a R$ 40 mil)\",\r",
+							"        \"Plano Platinum (até R$ 20 mil)\"\r",
+							"    ]);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Resposta não deve ser vazia\", function () {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"//R - TEMPO DE RESPOSTA\r",
+							"pm.test(\"Tempo de resposta deve estar abaixo de 3000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{url}}/api/combos"
+			},
+			"response": []
+		},
+		{
+			"name": "cadastro_de_lead",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let randomFullName = pm.variables.replaceIn('{{$randomFullName}}');\r",
+							"pm.environment.set('name', randomFullName);\r",
+							"\r",
+							"\r",
+							"\r",
+							"function generateRandomCPF() {\r",
+							"    let cpf = '';\r",
+							"    for (let i = 0; i < 11; i++) {\r",
+							"        cpf += Math.floor(Math.random() * 10);\r",
+							"    }\r",
+							"    return cpf;\r",
+							"}\r",
+							"const randomCPF = generateRandomCPF();\r",
+							"pm.environment.set('document', randomCPF);\r",
+							"\r",
+							"\r",
+							"\r",
+							"function getRandomItem(array) {\r",
+							"    const randomIndex = Math.floor(Math.random() * array.length);\r",
+							"\r",
+							"    return array[randomIndex];\r",
+							"}\r",
+							"\r",
+							"const codigosArea = [ \"11\", \"12\", \"13\", \"14\", \"15\", \"16\", \"17\", \"18\", \"19\",\r",
+							"    \"21\", \"22\", \"24\", \"27\", \"28\", \"31\", \"32\", \"33\", \"34\", \"35\", \"37\", \"38\",\r",
+							"    \"41\", \"42\", \"43\", \"44\", \"45\", \"46\", \"47\", \"48\", \"49\", \"51\", \"53\", \"54\", \r",
+							"    \"55\", \"61\", \"62\", \"64\", \"71\", \"73\", \"74\", \"75\", \"77\", \"81\", \"87\", \"85\", \"88\"\r",
+							"];\r",
+							"const digitoFixo = 9;\r",
+							"const codigoArea = getRandomItem(codigosArea);\r",
+							"let numerosRestantes = \"\";\r",
+							"\r",
+							"for (let i = 0; i < 8; i++) {\r",
+							"    const digitoAleatorio = Math.floor(Math.random() * 10);\r",
+							"    numerosRestantes += digitoAleatorio;\r",
+							"}\r",
+							"\r",
+							"const telefoneCompleto = `(${codigoArea})${digitoFixo}${numerosRestantes.slice(0, 4)}-${numerosRestantes.slice(4, 8)}`;\r",
+							"pm.environment.set(\"whatsapp\", telefoneCompleto);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"const policyAcceptance = pm.environment.get(\"policyAcceptance\");\r",
+							"\r",
+							"//A - AUTENTICAÇÃO E AUTORIZAÇÃO\r",
+							"pm.test(\"Usuário deve estar autenticado\", function () {\r",
+							"    const cookieHeader = pm.request.headers.get(\"Cookie\");\r",
+							"\r",
+							"    pm.expect(cookieHeader).to.not.be.null;\r",
+							"    pm.expect(cookieHeader).to.include(\"session_id=\");\r",
+							"    pm.expect(pm.response.code).to.be.equal(200);\r",
+							"});\r",
+							"\r",
+							"//D - FORMATO CORRETO DA RESPOSTA DA REQUISIÇÃO\r",
+							"pm.test(\"Resposta deve ter propriedades obrigatórias\", function () {\r",
+							"    pm.expect(responseJson).to.have.property(\"success\");\r",
+							"    pm.expect(responseJson.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Resposta não deve ser vazia\", function () {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"//E - RETORNOS HTTP'S PARA ERROS\r",
+							"if(policyAcceptance === false || policyAcceptance === \"false\"){\r",
+							"    pm.test(\"Retornar 400 se políticas de privacidade não forem aceitas\", function () {\r",
+							"        pm.expect(pm.response.code).to.equal(400);    \r",
+							"        pm.expect(responseJson).to.have.property(\"error\");\r",
+							"        pm.expect(responseJson.error).to.equal(\"Missing required fields\");\r",
+							"    });\r",
+							"};\r",
+							"\r",
+							"//R - TEMPO DE RESPOSTA\r",
+							"pm.test(\"Tempo de resposta deve ser abaixo de 3000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"document\": \"{{document}}\",\r\n  \"name\": \"{{name}}\",\r\n  \"planInterest\": \"{{planInterestId}}\",\r\n  \"policyAcceptance\": {{policyAcceptance}},\r\n  \"posInterest\": \"{{posInterestId}}\",\r\n  \"whatsapp\": \"{{whatsapp}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/api/lead"
+			},
+			"response": []
+		},
+		{
+			"name": "metricas_de_visualizacao",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"\r",
+							"//A - AUTENTICAÇÃO E AUTORIZAÇÃO\r",
+							"pm.test(\"Usuário deve estar autenticado\", function () {\r",
+							"    const cookieHeader = pm.request.headers.get(\"Cookie\");\r",
+							"\r",
+							"    pm.expect(cookieHeader).to.not.be.null;\r",
+							"    pm.expect(cookieHeader).to.include(\"session_id=\");\r",
+							"    pm.expect(pm.response.code).to.be.equal(200);\r",
+							"});\r",
+							"\r",
+							"//D - FORMATO CORRETO DA RESPOSTA DA REQUISIÇÃO\r",
+							"pm.test(\"Resposta deve ter propriedades obrigatórias\", function () {\r",
+							"    pm.expect(responseJson).to.have.property(\"success\");\r",
+							"    pm.expect(responseJson.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Resposta não deve ser vazia\", function () {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"//E - RETORNOS HTTP'S PARA ERROS\r",
+							"if (!requestBody.type || (requestBody.type !== \"view\" && requestBody.type !== \"visit\")) {\r",
+							"pm.test(\"Retorna 400 se type estiver ausente, nulo ou inválido\", function () {\r",
+							"        pm.expect(pm.response.code).to.equal(400);\r",
+							"        pm.expect(responseJson).to.have.property(\"error\");\r",
+							"        pm.expect(responseJson.error).to.equal(\"Invalid type or timeSpent\");\r",
+							"    });\r",
+							"};\r",
+							"\r",
+							"//R - TEMPO DE RESPOSTA\r",
+							"pm.test(\"Tempo de resposta deve ser abaixo de 3000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"{{type}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/api/metrics/update"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"pm.request.headers.add({\r",
+					"    key: 'Cookie',\r",
+					"    value: 'session_id=MnvXwj97ZVO0UPQuI4i6C.1386e30a90ac317aa9dea69d485bc2f5fef8d5c08c4c048800d823ae9c0a6fbb'\r",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
